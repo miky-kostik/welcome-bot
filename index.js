@@ -6,6 +6,8 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent,
     ],
 });
 
@@ -60,6 +62,14 @@ client.on('guildMemberAdd', (member) => {
 client.on('guildMemberUpdate', (oldMember, newMember) => {
     if (oldMember.pending && !newMember.pending) {
         sendWelcomeMessage(newMember);
+    }
+});
+
+client.on('messageCreate', (message) => {
+    console.log(`Zpráva přijata: "${message.content}" od ${message.author.tag}`);
+    if (message.content === '!testwelcome') {
+        console.log('Spouštím testwelcome...');
+        sendWelcomeMessage(message.member);
     }
 });
 
