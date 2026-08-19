@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
+
+registerFont('./assets/Poppins-Bold.ttf', { family: 'Poppins' });
 
 const client = new Client({
     intents: [
@@ -47,14 +49,14 @@ async function createWelcomeImage(username) {
 
     ctx.textAlign = 'center';
 
-    ctx.font = 'bold 90px sans-serif';
+    ctx.font = '90px Poppins';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 6;
     ctx.strokeText('WELCOME', canvas.width / 2, canvas.height / 2 - 30);
     ctx.fillStyle = '#ffffff';
     ctx.fillText('WELCOME', canvas.width / 2, canvas.height / 2 - 30);
 
-    ctx.font = 'bold 50px sans-serif';
+    ctx.font = '50px Poppins';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 4;
     ctx.strokeText(username, canvas.width / 2, canvas.height / 2 + 50);
