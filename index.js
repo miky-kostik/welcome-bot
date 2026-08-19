@@ -1,53 +1,38 @@
-require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
-const { createCanvas, loadImage } = require('canvas');
+require('dotenv').config(); 
+const { Client, GatewayIntentBits, EmbedBuilder } = require('discord.js');
+
 
 const client = new Client({
-    intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-    ],
+  intents: [
+    GatewayIntentBits.Guilds,         
+    GatewayIntentBits.GuildMembers,  
+  ],
 });
 
-client.once('clientReady', () => {
-    console.log(`Bot je přihlášený jako ${client.user.tag}`);
+
+client.once('ready', () => {
+  console.log(`Bot je přihlášený jako ${client.user.tag}`);
 });
 
-client.on('guildMemberAdd', async (member) => {
-    const channel = member.guild.channels.cache.find(
-        (ch) => ch.name === '👋-welcome'
-    );
+client.on('guildMemberAdd', (member) => {
+ 
+  const channel = member.guild.channels.cache.find(
+    (ch) => ch.name === '👋-welcome'
+  );
 
-    if (!channel) return;
+  if (!channel) {
+    console.log('Uvítací kanál nebyl nalezen.');
+    return;
+  }
 
-    const imageBuffer = await createWelcomeImage(member.user.username);
+  const welcomeEmbed = new EmbedBuilder()
+    .setColor(0x57f287)
+    .setTitle('Vítej na serveru! 👋')
+    .setDescription(`Ahoj ${member}, jsme rádi, že jsi tu!`)
+    .setThumbnail(member.user.displayAvatarURL())
+    .setTimestamp();
 
-    channel.send({
-        files: [{ attachment: imageBuffer, name: 'welcome.png'}],
-    });
+  channel.send({ embeds: [welcomeEmbed] });
 });
-
-async function createWelcomeImage(username) {
-    const canvas = createCanvas(1000, 500);
-    const ctx = canvas.getContext('2d');
-
-    const background = await loadImage('./assets/background.png');
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-    ctx.font = 'bold 60px Arial';
-    ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.fillText(`Vítej, ${username}!`, canvas.width / 2, canvas.height / 2);
-
-    return canvas.toBuffer();
-};
 
 client.login(process.env.DISCORD_TOKEN);
-
-const express = require('express');
-const app = express();
-app.disable('x-powered-by');
-app.get('/', (req, res) => res.send('Bot běží!'));
-app.listen(process.env.PORT || 3000, () => {
-    console.log('Webserver pro Railway spuštěn.');
-});
