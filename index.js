@@ -23,3 +23,10 @@ client.on('guildMemberAdd', (member) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
+
+const express = require('express');
+const app = express();
+app.get('/', (req, res) => res.send('Bot běží!'));
+app.listen(process.env.PORT || 3000, () => {
+    console.log('Webserver pro Railway spuštěn.');
+});
