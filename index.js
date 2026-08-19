@@ -1,8 +1,5 @@
 require('dotenv').config();
-const { Client, GatewayIntentBits } = require('discord.js');
-const { createCanvas, loadImage, registerFont } = require('canvas');
-
-registerFont('./assets/Poppins-Bold.ttf', { family: 'Poppins' });
+const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require('discord.js');
 
 const client = new Client({
     intents: [
@@ -13,7 +10,9 @@ const client = new Client({
     ],
 });
 
+// ⚠️ UPRAV TOHLE PODLE SVÉHO SERVERU:
 const WELCOME_CHANNEL_NAME = '👋-welcome';
+const BACKGROUND_IMAGE_PATH = './assets/background.png';
 
 client.once('clientReady', () => {
     console.log(`Bot je přihlášený jako ${client.user.tag}`);
@@ -25,45 +24,25 @@ async function sendWelcomeMessage(member) {
             (ch) => ch.name === WELCOME_CHANNEL_NAME
         );
 
-        if (!channel) return;
+        if (!channel) {
+            console.log(`Kanál "${WELCOME_CHANNEL_NAME}" nenalezen.`);
+            return;
+        }
 
-        const imageBuffer = await createWelcomeImage(member.user.username);
+        const attachment = new AttachmentBuilder(BACKGROUND_IMAGE_PATH, { name: 'welcome.png' });
 
-        await channel.send({
-            files: [{ attachment: imageBuffer, name: 'welcome.png' }],
-        });
+        const embed = new EmbedBuilder()
+            .setColor(0x2b2d31)
+            .setTitle('Welcome')
+            .setDescription(`${member} just joined the server!`)
+            .setImage('attachment://welcome.png')
+            .setThumbnail(member.user.displayAvatarURL())
+            .setTimestamp();
+
+        await channel.send({ embeds: [embed], files: [attachment] });
     } catch (error) {
         console.error(error);
     }
-}
-
-async function createWelcomeImage(username) {
-    const canvas = createCanvas(1000, 500);
-    const ctx = canvas.getContext('2d');
-
-    const background = await loadImage('./assets/background.png');
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.textAlign = 'center';
-
-    ctx.font = '90px Poppins';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 6;
-    ctx.strokeText('WELCOME', canvas.width / 2, canvas.height / 2 - 30);
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText('WELCOME', canvas.width / 2, canvas.height / 2 - 30);
-
-    ctx.font = '50px Poppins';
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 4;
-    ctx.strokeText(username, canvas.width / 2, canvas.height / 2 + 50);
-    ctx.fillStyle = '#e0e0e0';
-    ctx.fillText(username, canvas.width / 2, canvas.height / 2 + 50);
-
-    return canvas.toBuffer();
 }
 
 client.on('guildMemberAdd', (member) => {
@@ -79,9 +58,7 @@ client.on('guildMemberUpdate', (oldMember, newMember) => {
 });
 
 client.on('messageCreate', (message) => {
-    console.log(`Zpráva přijata: "${message.content}" od ${message.author.tag}`);
     if (message.content === '!testwelcome') {
-        console.log('Spouštím testwelcome...');
         sendWelcomeMessage(message.member);
     }
 });
