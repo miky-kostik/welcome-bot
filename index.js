@@ -32,7 +32,7 @@ const BACKGROUND_PATH = path.join(
 const FONT_PATH = path.join(
     __dirname,
     "assets",
-    "Poppins-Bold.ttf"
+    "Roboto_Condensed-Bold.ttf"
 );
 
 // ==============================
@@ -46,9 +46,9 @@ try {
     );
 
     if (registered) {
-        console.log("✅ Font Poppins byl načten.");
+        console.log("✅ Font Roboto byl načten.");
     } else {
-        console.log("⚠️ Font Poppins se nepodařilo načíst.");
+        console.log("⚠️ Font Roboto se nepodařilo načíst.");
     }
 } catch (error) {
     console.error("❌ Chyba při načítání fontu:", error);
