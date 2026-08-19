@@ -1,74 +1,301 @@
-require('dotenv').config();
-const { Client, GatewayIntentBits, EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const {
+    Client,
+    GatewayIntentBits,
+    Events,
+    AttachmentBuilder,
+    ChannelType
+} = require("discord.js");
+
+const {
+    createCanvas,
+    loadImage,
+    GlobalFonts
+} = require("@napi-rs/canvas");
+
+const path = require("path");
+const dotenv = require("dotenv");
+
+dotenv.config();
+
+// ==============================
+// NASTAVENÍ
+// ==============================
+
+const WELCOME_CHANNEL_ID = "1539596108764807288";
+
+const BACKGROUND_PATH = path.join(
+    __dirname,
+    "assets",
+    "background.png"
+);
+
+const FONT_PATH = path.join(
+    __dirname,
+    "assets",
+    "Poppins-Bold.ttf"
+);
+
+// ==============================
+// FONT
+// ==============================
+
+try {
+    const registered = GlobalFonts.registerFromPath(
+        FONT_PATH,
+        "Poppins"
+    );
+
+    if (registered) {
+        console.log("✅ Font Poppins byl načten.");
+    } else {
+        console.log("⚠️ Font Poppins se nepodařilo načíst.");
+    }
+} catch (error) {
+    console.error("❌ Chyba při načítání fontu:", error);
+}
+
+// ==============================
+// DISCORD CLIENT
+// ==============================
 
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.MessageContent,
-    ],
+        GatewayIntentBits.GuildMembers
+    ]
 });
 
-// ⚠️ UPRAV TOHLE PODLE SVÉHO SERVERU:
-const WELCOME_CHANNEL_NAME = '👋-welcome';
-const BACKGROUND_IMAGE_PATH = './assets/background.png';
+// ==============================
+// BOT READY
+// ==============================
 
-client.once('clientReady', () => {
-    console.log(`Bot je přihlášený jako ${client.user.tag}`);
+client.once(Events.ClientReady, (bot) => {
+    console.log("--------------------------------");
+    console.log(`✅ Bot je online: ${bot.user.tag}`);
+    console.log(`📢 Welcome channel: ${WELCOME_CHANNEL_ID}`);
+    console.log("--------------------------------");
 });
 
-async function sendWelcomeMessage(member) {
+// ==============================
+// NOVÝ ČLEN
+// ==============================
+
+client.on(Events.GuildMemberAdd, async (member) => {
+
+    console.log(
+        `👤 Nový člen: ${member.user.tag}`
+    );
+
     try {
-        const channel = member.guild.channels.cache.find(
-            (ch) => ch.name === WELCOME_CHANNEL_NAME
+
+        // ------------------------------
+        // NAJDE WELCOME KANÁL
+        // ------------------------------
+
+        const channel = await member.guild.channels.fetch(
+            WELCOME_CHANNEL_ID
         );
 
         if (!channel) {
-            console.log(`Kanál "${WELCOME_CHANNEL_NAME}" nenalezen.`);
+            console.error(
+                "❌ Welcome kanál nebyl nalezen!"
+            );
             return;
         }
 
-        const attachment = new AttachmentBuilder(BACKGROUND_IMAGE_PATH, { name: 'welcome.png' });
+        if (!channel.isTextBased()) {
+            console.error(
+                "❌ Zadaný kanál není textový kanál!"
+            );
+            return;
+        }
 
-        const embed = new EmbedBuilder()
-            .setColor(0x2b2d31)
-            .setTitle('Welcome')
-            .setDescription(`${member} just joined the server!`)
-            .setImage('attachment://welcome.png')
-            .setThumbnail(member.user.displayAvatarURL())
-            .setTimestamp();
+        // ------------------------------
+        // NAČTE POZADÍ
+        // ------------------------------
 
-        await channel.send({ embeds: [embed], files: [attachment] });
+        const background = await loadImage(
+            BACKGROUND_PATH
+        );
+
+        console.log(
+            `🖼️ Background: ${background.width}x${background.height}`
+        );
+
+        // Canvas bude mít stejnou velikost jako background
+        const canvas = createCanvas(
+            background.width,
+            background.height
+        );
+
+        const ctx = canvas.getContext("2d");
+
+        // ------------------------------
+        // BACKGROUND
+        // ------------------------------
+
+        ctx.drawImage(
+            background,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        // ------------------------------
+        // WELCOME
+        // ------------------------------
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.font = "bold 60px Poppins";
+        ctx.fillStyle = "#ffffff";
+
+        ctx.fillText(
+            "WELCOME",
+            canvas.width / 2,
+            80
+        );
+
+        // ------------------------------
+        // USERNAME
+        // ------------------------------
+
+        ctx.font = "bold 42px Poppins";
+
+        ctx.fillText(
+            member.user.username,
+            canvas.width / 2,
+            145
+        );
+
+        // ------------------------------
+        // MEMBER COUNT
+        // ------------------------------
+
+        ctx.font = "bold 25px Poppins";
+
+        ctx.fillText(
+            `Member #${member.guild.memberCount}`,
+            canvas.width / 2,
+            190
+        );
+
+        // ------------------------------
+        // AVATAR
+        // ------------------------------
+
+        const avatarURL = member.user.displayAvatarURL({
+            extension: "png",
+            size: 256
+        });
+
+        const avatar = await loadImage(
+            avatarURL
+        );
+
+        // Velikost avataru
+        const avatarSize = 170;
+
+        // Střed avataru
+        const avatarX =
+            canvas.width / 2 - avatarSize / 2;
+
+        const avatarY =
+            canvas.height - avatarSize - 45;
+
+        // KULATÝ AVATAR
+        ctx.save();
+
+        ctx.beginPath();
+
+        ctx.arc(
+            canvas.width / 2,
+            avatarY + avatarSize / 2,
+            avatarSize / 2,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(
+            avatar,
+            avatarX,
+            avatarY,
+            avatarSize,
+            avatarSize
+        );
+
+        ctx.restore();
+
+        // ------------------------------
+        // PNG
+        // ------------------------------
+
+        const imageBuffer = await canvas.encode(
+            "png"
+        );
+
+        const attachment = new AttachmentBuilder(
+            imageBuffer,
+            {
+                name: "welcome.png"
+            }
+        );
+
+        // ------------------------------
+        // ODESLÁNÍ
+        // ------------------------------
+
+        await channel.send({
+            content: `👋 Vítej na serveru, ${member}!`,
+            files: [attachment]
+        });
+
+        console.log(
+            `✅ Welcome zpráva odeslána pro ${member.user.tag}`
+        );
+
     } catch (error) {
-        console.error(error);
+
+        console.error(
+            "❌ CHYBA PŘI WELCOME:",
+            error
+        );
+
     }
+});
+
+// ==============================
+// ERROR HANDLING
+// ==============================
+
+client.on("error", (error) => {
+    console.error(
+        "❌ Discord client error:",
+        error
+    );
+});
+
+process.on("unhandledRejection", (error) => {
+    console.error(
+        "❌ Unhandled rejection:",
+        error
+    );
+});
+
+// ==============================
+// LOGIN
+// ==============================
+
+if (!process.env.TOKEN) {
+    console.error(
+        "❌ V .env chybí TOKEN!"
+    );
+    process.exit(1);
 }
 
-client.on('guildMemberAdd', (member) => {
-    if (!member.pending) {
-        sendWelcomeMessage(member);
-    }
-});
-
-client.on('guildMemberUpdate', (oldMember, newMember) => {
-    if (oldMember.pending && !newMember.pending) {
-        sendWelcomeMessage(newMember);
-    }
-});
-
-client.on('messageCreate', (message) => {
-    if (message.content === '!testwelcome') {
-        sendWelcomeMessage(message.member);
-    }
-});
-
-client.login(process.env.DISCORD_TOKEN);
-
-const express = require('express');
-const app = express();
-app.disable('x-powered-by');
-app.get('/', (req, res) => res.send('Bot běží!'));
-app.listen(process.env.PORT || 3000, () => {
-    console.log('Webserver pro Railway spuštěn.');
-});
+client.login(process.env.TOKEN);
