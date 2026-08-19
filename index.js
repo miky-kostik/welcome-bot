@@ -150,7 +150,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
         ctx.textBaseline = "middle";
 
         ctx.font = "bold 60px Roboto";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#0e0808";
 
         ctx.fillText(
             "WELCOME",
