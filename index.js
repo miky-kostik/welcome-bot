@@ -42,7 +42,7 @@ const FONT_PATH = path.join(
 try {
     const registered = GlobalFonts.registerFromPath(
         FONT_PATH,
-        "Poppins"
+        "Roboto"
     );
 
     if (registered) {
@@ -149,7 +149,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        ctx.font = "bold 60px Poppins";
+        ctx.font = "bold 60px Roboto";
         ctx.fillStyle = "#ffffff";
 
         ctx.fillText(
@@ -162,7 +162,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
         // USERNAME
         // ------------------------------
 
-        ctx.font = "bold 42px Poppins";
+        ctx.font = "bold 42px Roboto";
 
         ctx.fillText(
             member.user.username,
@@ -174,7 +174,7 @@ client.on(Events.GuildMemberAdd, async (member) => {
         // MEMBER COUNT
         // ------------------------------
 
-        ctx.font = "bold 25px Poppins";
+        ctx.font = "bold 25px Roboto";
 
         ctx.fillText(
             `Member #${member.guild.memberCount}`,
