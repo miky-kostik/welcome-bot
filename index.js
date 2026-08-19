@@ -42,13 +42,24 @@ async function createWelcomeImage(username) {
     const background = await loadImage('./assets/background.png');
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    ctx.font = 'bold 60px sans-serif';
-    ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText(`Vítej, ${username}!`, canvas.width / 2, canvas.height / 2);
+
+    ctx.font = 'bold 90px sans-serif';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 6;
+    ctx.strokeText('WELCOME', canvas.width / 2, canvas.height / 2 - 30);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('WELCOME', canvas.width / 2, canvas.height / 2 - 30);
+
+    ctx.font = 'bold 50px sans-serif';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 4;
+    ctx.strokeText(username, canvas.width / 2, canvas.height / 2 + 50);
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fillText(username, canvas.width / 2, canvas.height / 2 + 50);
 
     return canvas.toBuffer();
 }
