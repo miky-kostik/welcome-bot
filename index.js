@@ -31,7 +31,7 @@ async function createWelcomeImage(username) {
     const canvas = createCanvas(1000, 500);
     const ctx = canvas.getContext('2d');
 
-    const background = await loadImage('./assets/welcome-background.webp');
+    const background = await loadImage('./assests/background.webp');
     ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
 
     ctx.font = 'bold 60px Arial';
